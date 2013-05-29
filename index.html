@@ -87,12 +87,15 @@
 				if(this == staticOrder[a].parent){
 					console.log(staticOrder[a].id);
 
+
+
 					staticOrder[a].makeBig();
 					active = staticOrder[a];
 					staticOrder.splice(a,1);
+
 					//if there is an active one add it
 					if(active){
-						staticOrder.push(active);
+						staticOrder.splice(0,0,active);
 					}
 
 					//this resizes all the other elements to their right postion
@@ -103,7 +106,7 @@
 					//with their order then they can reposition them selves correctly
 				}
 			}
-			console.log(active, staticOrder.length);
+			console.log(active.id);
 		}
 
 		function hideOthers(){
@@ -146,18 +149,19 @@
 			}
 
 			this.makeBig = function(){
-				hideOthers();
 				this.presenting = true;
 				with(this.parent.style){
 					left = "0px";
 					width = "100%";
 					zIndex = 1;
 				}
+				console.log("make big this",this.id);
 			}
 
 			this.setOrder = function(newOrder, newtotalNumbOfEl){
 				order = newOrder;
 				totalNumbOfEl = newtotalNumbOfEl;
+				this.presenting = false;
 
 				with(this.parent.style){
 					left = localWidth - ((order+1)*50);
