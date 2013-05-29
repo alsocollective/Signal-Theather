@@ -1,0 +1,172 @@
+<html>
+<head>
+	<title>Signal</title>
+</head>
+	<style type="text/css">
+	html,body{
+		margin: 0px;
+		padding: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: #fff;
+	}
+
+	#almightyParent{
+		background-color: #ddd;
+		position: absolute;
+		width: -webkit-calc(100% - 5em);
+		width: -moz-calc(100% - 5em);
+		width: -o-calc(100% - 5em);
+		width: calc(100% - 5em);
+
+		height: -webkit-calc(100% - 5em);
+		height: -moz-calc(100% - 5em);
+		height: -o-calc(100% - 5em);
+		height: calc(100% - 5em);
+		left: 2.5em;
+		top: 2.5em;
+
+		overflow: hidden;
+
+	}
+
+	.navButton{
+		position: absolute;
+		width: 50px;
+		height: 100%;
+		background-color: #aaa;
+		overflow: scroll;
+
+		transition: left 1s, width 1s;
+		-moz-transition: left 1s, width 1s;
+		-webkit-transition: left 1s, width 1s;
+		-o-transition: left 1s, width 1s;
+	}
+
+	</style>
+<body>
+	<div id="almightyParent">
+		<div id="splash"></div>
+		<div id="button1" class="navButton">
+			<div class="content"></div>
+		</div>
+		<div id="button2" class="navButton">
+			<div class="content"></div>
+		</div>
+		<div id="button3" class="navButton">
+			<div class="content"></div>
+		</div>
+		<div id="button4" class="navButton">
+			<div class="content"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var width,height;
+
+		var staticOrder = [];
+		var active;
+
+		window.onload = function(){
+			var root = document.getElementById("almightyParent");
+			width = root.offsetWidth;
+			height = root.offsetHeight;
+
+			var elements = document.getElementsByClassName("content");
+			for(var a = 0; a < elements.length; ++a){
+				staticOrder[a] = (new block(elements[a],a, elements.length));
+				staticOrder[a].setSize(width,height);
+				staticOrder[a].makeColorRandom();
+				staticOrder[a].parent.addEventListener("click",makeMain);
+			}
+
+		}
+
+		function makeMain(currentEvent){
+			var templength = staticOrder.length;
+			for(var a = 0; a < templength; ++a){
+				if(this == staticOrder[a].parent){
+					console.log(staticOrder[a].id);
+
+					staticOrder[a].makeBig();
+					active = staticOrder[a];
+					staticOrder.splice(a,1);
+					//if there is an active one add it
+					if(active){
+						staticOrder.push(active);
+					}
+
+					//this resizes all the other elements to their right postion
+					for(var b = 0; b < staticOrder.length; ++b){
+						staticOrder[b].setOrder(b, staticOrder.length);
+					}
+					//have to remove the element and update then all other elements with their order
+					//with their order then they can reposition them selves correctly
+				}
+			}
+			console.log(active, staticOrder.length);
+		}
+
+		function hideOthers(){
+			for(var a = 0; a < staticOrder.length; ++a){
+				if(staticOrder.presenting){
+					//make it small and send it to the far right
+				}
+			}
+		}
+
+		function block(element, order, totalNumbOfEl){
+			this.parent = element.parentNode;
+			var content = element;
+
+			//meta data...
+			this.id = this.parent.id;
+			var order = order;
+			var totalNumbOfEl = totalNumbOfEl;
+			this.presenting = false; //to tell if it's big or not
+			var localWidth,localHeight;
+
+			//temp to be able to identify it
+			content.innerHTML = (order+1);
+
+			this.makeColorRandom = function(){
+				content.style.backgroundColor = "#"+(Math.floor(Math.random()*999));
+			}
+
+			this.setSize = function(newWidth,newHeight){
+				localWidth = newWidth;
+				localHeight = newHeight;
+				with(this.parent.style){
+					left = newWidth - ((order+1)*50);
+					zIndex = 2;
+				}
+				with(content.style){
+					width = newWidth;
+					height = newHeight;
+				}
+			}
+
+			this.makeBig = function(){
+				hideOthers();
+				this.presenting = true;
+				with(this.parent.style){
+					left = "0px";
+					width = "100%";
+					zIndex = 1;
+				}
+			}
+
+			this.setOrder = function(newOrder, newtotalNumbOfEl){
+				order = newOrder;
+				totalNumbOfEl = newtotalNumbOfEl;
+
+				with(this.parent.style){
+					left = localWidth - ((order+1)*50);
+					zIndex = 2;
+					width = "50px";
+					zIndex = 2;
+				}
+			}
+		}
+	</script>
+</body>
+</html>
