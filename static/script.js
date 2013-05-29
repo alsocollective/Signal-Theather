@@ -5,7 +5,7 @@ var options = {
 	"idOfSpash": 				"splash",			//the splash page, don't really need to define this anymore
 	"idOfContent": 				"company",  		//the ID of div that will contain the company info
 	"idOfContentButton": 		"companyButton",	//the ID of button for the company
-	"sizeOfButtons": 			50, 				//the width of the side panels
+	"sizeOfButtons": 			25, 				//the width of the side panels
 	"transitionSpeed": 			500, 				//the speed at which evertything moves, beaware, if people start clicking multiple things, they will try to load and in doing so, alter the animations
 	"archiveNavWidth": 			200, 				//keep this as the same width of the archive Nav
 	"randomButtonColors": 		true,				//this was for the dev of it...
@@ -19,6 +19,7 @@ var staticOrder = [];		//side bar items
 var active;					//active element, the big one, this is only for staticOrder
 var root;					//container for this whole thing
 var company;				//company object
+var staticfull = true;
 
 
 
@@ -63,11 +64,13 @@ function colapseAll(){
 	for(var b = 0; b < staticOrder.length; ++b){
 		staticOrder[b].setOrder(b, staticOrder.length,"right");
 	}
+	staticfull = true;
 }
 
 function makeMain(currentEvent){
 	var templength = staticOrder.length;
 	var point;
+
 	for(var a = 0; a < templength; ++a){
 		if(this == staticOrder[a].parent){
 			//retrive and remove the new active element
@@ -91,13 +94,27 @@ function makeMain(currentEvent){
 			a = 999;
 		}
 	}
+	//adding feature of slide the bar right and then refill
 	if(point < staticOrder.length){
-		if(point != staticOrder.length-1 || staticOrder.length > 1){
+		if(point == 0 && !staticfull){	//when the far right object is pressed, and is not full
+			setTimeout(function(){	//delay for to allow the movement of the slide to the right
+				for(var a = point; a < staticOrder.length; ++a){
+					staticOrder[a].bringToLocation(a-1);  //set the location over 1
+					staticOrder[a].basicOrder(a);	//reset the basic order though
+				}
+				setTimeout(function(){
+					for(var a = point; a < staticOrder.length; ++a){
+						staticOrder[a].bringToLocation(a);	//place the objects back to  where they are ment to be
+					}
+				},options["transitionSpeed"]);
+			},options["transitionSpeed"]+10); //we got to add a bit of time so the slide has time to move left
+		} else if(point != staticOrder.length-1 || staticOrder.length > 1){ //anything larger than 0, and less than the last one
 			setTimeout(function(){
 				for(var a = point; a < staticOrder.length; ++a){
 					staticOrder[a].bringToLocation(a);
 				}
 			},options["transitionSpeed"]*2);
+			staticfull = false;
 		}
 	}
 
@@ -109,7 +126,6 @@ function logStaticOrder(){
 	for(var a = 0; a < staticOrder.length;++a){
 		out.push(staticOrder[a].id+"", staticOrder[a].getOrder());
 	}
-	console.log(out);
 }
 
 function findChildId(within,id){
@@ -306,7 +322,6 @@ function block(element, order, totalNumbOfEl){
 				}
 				//reenableing the sliding fucntion and then setting it to it's proper locaiton
 				setTimeout(function(){
-					enableTransitions();
 					staticOrder[order].setListener();
 					for(var a = 0; a < staticOrder.length; ++a){
 						staticOrder[a].bringToLocation(a);
@@ -317,12 +332,20 @@ function block(element, order, totalNumbOfEl){
 	}
 
 
-	this.bringToLocation = function(){
+	this.bringToLocation = function(newOrder){
+		if(newOrder == 0 || newOrder){
+			order = newOrder;
+		}
+		enableTransitions();
 		with(parentNode.style){
 			left = localWidth - ((order+1)*options["sizeOfButtons"]);
 			zIndex = 2;
 			width = options["sizeOfButtons"]+"px";
 		}
+	}
+
+	this.basicOrder = function(newOrder){
+		order = newOrder;
 	}
 
 	this.getOrder = function(){
