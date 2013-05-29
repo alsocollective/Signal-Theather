@@ -1,9 +1,19 @@
+
+var options = {
+	"containerOfEverything" : "almightyParent",
+	"classOfCreationMark" : "content",
+	"sizeOfButtons":"50px",
+	"idOfSpash":"splash",
+};
+
 var width,height;
 
 var staticOrder = [];		//the side bar items
-var active = document.getElementById("splash"); //the active element
-var root = document.getElementById("almightyParent"); //the container for this whole thing
+var active = document.getElementById(options["idOfSpash"]); //the active element
+var root = document.getElementById(options["containerOfEverything"]); //the container for this whole thing
 var company;
+
+
 
 window.onload = function(){
 	width = root.offsetWidth;
@@ -12,7 +22,7 @@ window.onload = function(){
 	company = new companyObj(document.getElementById("company"),document.getElementById("companyButton"));
 	company.resize(width);
 
-	var elements = document.getElementsByClassName("content");
+	var elements = document.getElementsByClassName(options["classOfCreationMark"]);
 	for(var a = 0; a < elements.length; ++a){
 		staticOrder[a] = (new block(elements[a],a, elements.length));
 		staticOrder[a].setSize(width,height);
@@ -26,7 +36,7 @@ window.onload = function(){
 		for(var a = 0; a < staticOrder.length; ++a){
 			staticOrder[a].setSize(width,height);
 		}
-		if(active.id != "splash"){
+		if(active && active.id != options["idOfSpash"]){
 			active.setSize(width,height);
 		}
 		company.resize(width);
@@ -35,7 +45,7 @@ window.onload = function(){
 
 
 function colapseAll(){
-	if(active && active.id != "splash"){
+	if(active && active.id != options["idOfSpash"]){
 		staticOrder.splice(0,0,active);
 		active = null;
 	}
@@ -53,7 +63,7 @@ function makeMain(currentEvent){
 			staticOrder.splice(a,1);
 
 			//if there is an active one add it back to the list
-			if(active && active.id != "splash"){
+			if(active && active.id != options["idOfSpash"]){
 				staticOrder.splice(0,0,active);
 			}
 
@@ -116,7 +126,10 @@ function companyObj(element,buttonEl){
 	buttonEl.addEventListener("click",toggle);
 
 	this.resize = function(newWidth){
-		parentNode.style.left = - newWidth;
+		if(!ondisplay){
+			parentNode.style.left = - newWidth;
+		}
+		parentNode.style.display = "block";
 		locWidth = newWidth;
 	}
 
@@ -156,17 +169,19 @@ function block(element, order, totalNumbOfEl){
 	var activeContainer = activeMain.parentNode;
 	var toArchiveButton = findChildId(activeMain,"archiveButton");
 	var toActiveButton = findChildId(activeContainer,"activeButton");
+	var inActive = true;
 
-	var parentEventListener;
+
 
 	toArchiveButton.addEventListener("click",function(){
-		console.log(content);
+		inActive = false;
 		with(content.style){
 			left = -localWidth;
 		}
 	});
 
 	toActiveButton.addEventListener("click",function(){
+		inActive = true;
 		with(content.style){
 			left = 0;
 		}
@@ -211,6 +226,11 @@ function block(element, order, totalNumbOfEl){
 		with(activeMain.style){
 			width = newWidth;
 		}
+		if(!inActive){
+			with(content.style){
+				left = -newWidth;
+			}
+		}
 	}
 
 	this.makeBig = function(){
@@ -224,6 +244,13 @@ function block(element, order, totalNumbOfEl){
 	}
 
 	this.setOrder = function(newOrder, newtotalNumbOfEl){
+		//to reset the archive
+		if(!inActive){
+			inActive = true;
+			with(content.style){
+				left = 0;
+			}
+		}
 		order = newOrder;
 		totalNumbOfEl = newtotalNumbOfEl;
 		if(this.presenting){ 						//when we are dealing with the old preseting object we got to put it to the left and then bring it in
@@ -238,11 +265,6 @@ function block(element, order, totalNumbOfEl){
 			},1000);
 		}
 		else {
-			with(this.parent.style){
-				left = localWidth - ((order+1)*50);
-				zIndex = 2;
-				width = "50px";
-			}
 			//when the element is off the screen it's transitions are disabled
 			//we must bring this element back on screen to it's proper location
 			if(!transition){
@@ -255,9 +277,19 @@ function block(element, order, totalNumbOfEl){
 				setTimeout(function(){
 					enableTransitions();
 					staticOrder[order].setListener();
-					staticOrder[order].setOrder(order,totalNumbOfEl)
+					for(var a = 0; a < staticOrder.length; ++a){
+						staticOrder[a].bringToLocation();
+					}
 				},1000);
 			}
+		}
+	}
+
+	this.bringToLocation = function(){
+		with(this.parent.style){
+			left = localWidth - ((order+1)*50);
+			zIndex = 2;
+			width = options["sizeOfButtons"];
 		}
 	}
 
