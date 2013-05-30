@@ -1,165 +1,22 @@
 
-var options = {
+var myOptions = {
 	"containerOfEverything": 	"almightyParent", 	//this is and ID the top levl object, there can only be one with
 	"classOfCreationMark": 		"content", 			//this a Class that defines element to create a new slide object from them
 	"idOfSpash": 				"splash",			//the splash page, don't really need to define this anymore
 	"idOfContent": 				"company",  		//the ID of div that will contain the company info
 	"idOfContentButton": 		"companyButton",	//the ID of button for the company
 	"sizeOfButtons": 			25, 				//the width of the side panels
-	"firstTransition": 			1000,
-	"secondTransition": 		500, 				//the speed at which evertything moves, beaware, if people start clicking multiple things, they will try to load and in doing so, alter the animations
+	"slideTimmer": 				1000,				//Genearl speed of the site
+	"slideTimmerTransition": 	"1s",				//for compatibility write the same as above just in seconds
+	"secondTransition": 		10, 				//amount of time before comming back in from the right
 	"archiveNavWidth": 			200, 				//keep this as the same width of the archive Nav
-	"randomButtonColors": 		true				//this was for the dev of it...
+	"randomButtonColors": 		true,				//this was for the dev of it...
+	"hardRight": 				"hard"				//how the slides go to the right
 };
 
 
-var width,height;
-
-var staticOrder = [];		//side bar items
-var active;					//active element, the big one, this is only for staticOrder
-var root;					//container for this whole thing
-var company;				//company object
-var staticfull = true;
-
-
-
 window.onload = function(){
-	active = document.getElementById(options["idOfSpash"]);
-	root = document.getElementById(options["containerOfEverything"]);
-	width = root.offsetWidth;
-	height = root.offsetHeight;
-
-	company = new companyObj(document.getElementById(options["idOfContent"]),document.getElementById(options["idOfContentButton"]));
-	company.resize(width);
-
-
-	var elements;
-	if (!document.getElementsByClassName) {
-		elements = AllWithClassName(root,options["classOfCreationMark"])
-	} else {
-		elements = document.getElementsByClassName(options["classOfCreationMark"]);
-	}
-
-	for(var a = 0; a < elements.length; ++a){
-		staticOrder[a] = (new block(elements[a],a, elements.length));
-		staticOrder[a].setSize(width,height);
-		if(options["randomButtonColors"]){
-			staticOrder[a].makeColorRandom();
-		}
-		staticOrder[a].setListener();//.parent.addEventListener("click",makeMain);
-	}
-
-
-	if (!window.addEventListener) {
-		window.attachEvent("resize",function(){
-			width = root.offsetWidth;
-			height = root.offsetHeight;
-			for(var a = 0; a < staticOrder.length; ++a){
-				staticOrder[a].setSize(width,height);
-			}
-			if(active && active.id != options["idOfSpash"]){
-				active.setSize(width,height);
-			}
-			company.resize(width);
-		});
-	}
-	else {
-		window.addEventListener("resize",function(){
-			width = root.offsetWidth;
-			height = root.offsetHeight;
-			for(var a = 0; a < staticOrder.length; ++a){
-				staticOrder[a].setSize(width,height);
-			}
-			if(active && active.id != options["idOfSpash"]){
-				active.setSize(width,height);
-			}
-			company.resize(width);
-		});
-	}
-}
-
-
-
-
-function colapseAll(){
-	if(active && active.id != options["idOfSpash"]){
-		staticOrder.splice(0,0,active);
-		active = null;
-	}
-	for(var b = 0; b < staticOrder.length; ++b){
-		staticOrder[b].setOrder(b, staticOrder.length,"right");
-	}
-	staticfull = true;
-}
-
-function makeMain(currentEvent){
-	var templength = staticOrder.length;
-	var point;
-
-	for(var a = 0; a < templength; ++a){
-		if(this == staticOrder[a].parent){
-			//retrive and remove the new active element
-			var newActive = staticOrder[a];
-			staticOrder.splice(a,1);
-
-			//if there is an active one add it back to the list
-			if(active && active.id != options["idOfSpash"]){
-				staticOrder.splice(0,0,active);
-			}
-
-			//resize the new active element
-			newActive.makeBig();
-			active = newActive;
-
-			//this resizes all the other elements to their right postion
-			for(var b = 0; b < staticOrder.length; ++b){
-				staticOrder[b].setOrder(b, staticOrder.length,"left");
-			}
-			point = a;
-			a = 999;
-		}
-	}
-
-
-	//adding feature of slide the bar right and then refill
-	if(point < staticOrder.length){
-		if(point == 0 && !staticfull){	//when the far right object is pressed, and is not full
-			setTimeout(function(){	//delay for to allow the movement of the slide to the right
-				for(var a = point; a < staticOrder.length; ++a){
-					staticOrder[a].bringToLocation(a-1);  //set the location over 1
-					staticOrder[a].basicOrder(a);	//reset the basic order though
-				}
-				setTimeout(function(){
-					for(var a = point; a < staticOrder.length; ++a){
-						staticOrder[a].bringToLocation(a);	//place the objects back to  where they are ment to be
-					}
-				},options["firstTransition"]);
-			},options["firstTransition"]+10); //we got to add a bit of time so the slide has time to move left
-		} else if(point != staticOrder.length-1 || staticOrder.length > 1){ //anything larger than 0, and less than the last one
-
-		console.log("Tigger first Shuffel");
-			// for(var a = point; a < staticOrder.length; ++a){
-			// 	staticOrder[a].bringToLocation(a);
-			// }
-
-			//setTimeout(function(){
-				for(var a = point; a < staticOrder.length; ++a){
-					staticOrder[a].bringToLocation(a);
-				}
-			//},options["firstTransition"]*2);
-
-			staticfull = false;
-		}
-	}
-
-	company.hide();
-}
-
-function logStaticOrder(){
-	var out = [];
-	for(var a = 0; a < staticOrder.length;++a){
-		out.push(staticOrder[a].id+"", staticOrder[a].getOrder());
-	}
+	var sliders = SliderMain(myOptions);
 }
 
 function findChildId(within,id){
@@ -196,280 +53,380 @@ function AllWithClassName(inThisElement,className){
 	return out;
 }
 
+function SliderMain(options){
+	var staticOrder = [];		//side bar items
+	var active;
+	var newHidden 	= null;
+	var hidden 		= null;
+	var root 		= document.getElementById(options["containerOfEverything"]);
+	var width 		= root.offsetWidth;
+	var height 		= root.offsetHeight;
+	var company 	= new companyObj(document.getElementById(options["idOfContent"]),document.getElementById(options["idOfContentButton"]));
+	var staticfull 	= true;
 
-function companyObj(element,buttonEl){
-	var parentNode = element;
-	var buttonEl = buttonEl;
-	var transition = false;
-	var ondisplay = false;
-	var locWidth,locHeight;
 
-	setTimeout(enableTransitions,10);
-	function toggle(){
-		if(ondisplay){
-			parentNode.style.left = -root.offsetWidth;
-			ondisplay = false;
-		} else {
-			colapseAll();
-			parentNode.style.left = 0;
-			ondisplay = true;
+	company.resize(width);
+
+	//find the elements in the parent and make them into blocks
+	var elements;
+	if (!document.getElementsByClassName) {
+		elements = AllWithClassName(root,options["classOfCreationMark"])
+	} else {
+		elements = document.getElementsByClassName(options["classOfCreationMark"]);
+	}
+	for(var a = 0; a < elements.length; ++a){
+		staticOrder[a] = (new block(elements[a],a, elements.length));
+		staticOrder[a].setSize(width,height);
+		if(options["randomButtonColors"]){
+			staticOrder[a].makeColorRandom();
 		}
 	}
 
-	this.hide = function(){
-		if(ondisplay){
-			parentNode.style.left = -locWidth;
-			ondisplay = false;
-		}
-	}
 
-	if (!buttonEl.addEventListener) {
-		buttonEl.attachEvent("onclick", toggle);
+	if (!window.addEventListener) {
+		window.onresize = function(){
+			width = root.offsetWidth;
+			height = root.offsetHeight;
+			for(var a = 0; a < staticOrder.length; ++a){
+				staticOrder[a].setSize(width,height);
+			}
+			if(active && active.id != options["idOfSpash"]){
+				active.setSize(width,height);
+			}
+			company.resize(width);
+			rearangeNav("hard");
+		}
 	}
 	else {
-		buttonEl.addEventListener("click",toggle);
-	}
-
-	this.resize = function(newWidth){
-		if(!ondisplay){
-			parentNode.style.left = - newWidth;
-		}
-		parentNode.style.display = "block";
-		locWidth = newWidth;
-	}
-
-	function enableTransitions(){
-		if(!transition){
-			with(parentNode.style){
-				transition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				MozTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				WebkitTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				OTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+		window.addEventListener("resize",function(){
+			width = root.offsetWidth;
+			height = root.offsetHeight;
+			for(var a = 0; a < staticOrder.length; ++a){
+				staticOrder[a].setSize(width,height);
 			}
-			transition = true;
-		}
-	}
-
-	function disableTransitions(){
-		if(transition){
-			with(parentNode.style){
-				transition = "left 0s, width 0s";
-				MozTransition = "left 0s, width 0s";
-				WebkitTransition = "left 0s, width 0s";
-				OTransition = "left 0s, width 0s";
+			if(active && active.id != options["idOfSpash"]){
+				active.setSize(width,height);
 			}
-			transition = false;
-		}
-	}
-}
-
-//This is our class persay
-function block(element, order, totalNumbOfEl){
-	var parentNode = element.parentNode;
-	this.parent = parentNode;
-
-	var content = element;
-	var activeMain = findChildId(content,"activeMain");
-	var activeContainer = activeMain.parentNode;
-	var toArchiveButton = findChildId(activeMain,"archiveButton");
-	var toActiveButton = findChildId(activeContainer,"activeButton");
-	var inActive = true;
-
-	//meta data...
-	this.id = this.parent.id;
-	var order = order;
-	var totalNumbOfEl = totalNumbOfEl;
-	this.presenting = false; //to tell if it's big or not
-	var localWidth,localHeight;
-	var transition = false;
-
-	setTimeout(enableTransitions,1);
-
-
-
-	if (!toActiveButton.addEventListener) {
-		toActiveButton.attachEvent("onclick",function(){
-			inActive = true;
-			with(content.style){
-				left = 0;
-			}
+			rearangeNav("hard");
+			company.resize(width);
 		});
-		toArchiveButton.attachEvent("onclick",function(){
-			inActive = false;
-			with(content.style){
-				left = -localWidth;
-			}
-		});
-	} else {
-		toActiveButton.addEventListener("click",function(){
-			inActive = true;
-			with(content.style){
-				left = 0;
-			}
-		});
-		toArchiveButton.addEventListener("click",function(){
-			inActive = false;
-			with(content.style){
-				left = -localWidth;
-			}
-		});
+	//Resize
 	}
 
-	this.setListener = function(){
-		if (!parentNode.addEventListener) {
-			parentNode.attachEvent("onclick",makeMain);
-		} else {
-			parentEventListener = parentNode.addEventListener("click",makeMain);
+	function colapseAll(){
+		if(!hidden){
+			newHidden = active;
+			hideHidden("right");
+			active = null;
+			console.log("collapse all");
 		}
 	}
 
-	this.makeColorRandom = function(){
-		content.style.backgroundColor = "#"+(Math.floor(Math.random()*999));
-	}
-
-	this.setSize = function(newWidth,newHeight){
-		localWidth = newWidth;
-		localHeight = newHeight;
-
-		if(!this.presenting){
-			with(this.parent.style){
-				left = newWidth - ((order+1)*options["sizeOfButtons"]);
-				zIndex = 2;
-			}
-		}
-		with(content.style){
-			width = newWidth*2;
-			height = newHeight;
-		}
-		with(activeContainer.style){
-			width = newWidth+options["archiveNavWidth"]; //this makes the left nav for 30%
-		}
-		with(activeMain.style){
-			width = newWidth;
-		}
-		if(!inActive){
-			with(content.style){
-				left = -newWidth;
-			}
-		}
-	}
-
-	this.makeBig = function(){
-		this.presenting = true;
-		with(this.parent.style){
-			zIndex = 1;
-			left = "0px";
-			width = "100%";
-		}
-		if(!parentNode.removeEventListener){
-			parentNode.detachEvent('onclick',makeMain);
-		} else {
-			parentNode.removeEventListener("click",makeMain);
-		}
-	}
-
-	this.setOrder = function(newOrder, newtotalNumbOfEl, direction){
-		//to reset the archive
-		if(!inActive){
-			inActive = true;
-			with(content.style){
-				left = 0;
-			}
-		}
-
-		order = newOrder;
-		totalNumbOfEl = newtotalNumbOfEl;
-		if(this.presenting){ 						//when we are dealing with the old preseting object we got to put it to the left and then bring it in
-			enableTransitions();
-			if(direction =="left"){
-				this.parent.style.left = -localWidth;	//sliding off the left
-			} else {
-				this.parent.style.left = localWidth;	//sliding off the right
-			}
-			this.presenting = false;				//no longer presenting
-
-			//this moves the emelents right away
-			for(var b = 0; b < staticOrder.length; ++b){
-				if(staticOrder[b].id != this.id){
-					staticOrder[b].bringToLocation(b-1);
-					staticOrder[b].basicOrder(b);
-					console.log(staticOrder[b].id);
+	function makeMain(currentEvent){
+		if(!hidden){
+			for(var a = 0; a < staticOrder.length; ++ a){ //find and make click element main
+				if(staticOrder[a].id == currentEvent){
+					if(active && active.id != options["idOfSpash"]){
+						newHidden = active;
+						hideHidden();
+					}
+					active = staticOrder[a];
+		 			staticOrder.splice(a,1);
+					rearangeNav(options["hardRight"]);
+					active.setupToBeMain();
 				}
 			}
+			company.hide();
+		}
+	}
 
-			//once off screen we disable it and reorganize the elements
+	function hideHidden(direction){
+		if(newHidden){
+			newHidden.callToActive();
+			newHidden.hide(direction);
+			hidden = newHidden;
+			newHidden = null;
+			setTimeout(returnHidden,options["slideTimmer"]);
+		} else {
+			console.log("no new hidden");
+		}
+	}
+
+	function returnHidden(){
+		if(hidden){
+			hidden.moveToHiddenPlace();
 			setTimeout(function(){
-				disableTransitions();
-				for(var b = 0; b < staticOrder.length; ++b){
-					staticOrder[b].setOrder(b, staticOrder.length,"left");
-				}
-			},options["firstTransition"]);
+				staticOrder.splice(0,0,hidden);
+				rearangeNav();
+				hidden = null;
+			},options["secondTransition"]);
+		} else {
+			console.log("hidden doesn't exist");
+		}
+	}
+
+	function rearangeNav(style){
+		if(style == "hard"){
+			for(var a =0; a < staticOrder.length; ++a){
+				staticOrder[a].bringToLocationHard(a);
+			}
+		} else {
+			for(var a =0; a < staticOrder.length; ++a){
+				staticOrder[a].bringToLocation(a);
+			}
+		}
+	}
+
+	function companyObj(element,buttonEl){
+		var parentNode = element;
+		var buttonEl = buttonEl;
+		var transition = false;
+		var ondisplay = false;
+		var locWidth,locHeight;
+
+		setTimeout(enableTransitions,10);
+
+		if (!buttonEl.addEventListener) {
+			buttonEl.attachEvent("onclick", toggle);
 		}
 		else {
-			//when the element is off the screen it's transitions are disabled
-			//we must bring this element back on screen to it's proper location
+			buttonEl.addEventListener("click",toggle);
+		}
+
+		function toggle(){
+			if(ondisplay){
+				parentNode.style.left = -locWidth;
+				ondisplay = false;
+			} else {
+				colapseAll();
+				parentNode.style.left = 0;
+				ondisplay = true;
+			}
+		}
+
+		this.hide = function(){
+			if(ondisplay){
+				parentNode.style.left = -locWidth;
+				ondisplay = false;
+			}
+		}
+
+		this.resize = function(newWidth){
+			locWidth = newWidth;
+			parentNode.style.display = "block";
+			if(!ondisplay){
+				parentNode.style.left = - locWidth;
+			}
+		}
+
+		function enableTransitions(){
 			if(!transition){
-				//this is where we are placing the element to the far right and sliding it back in
+				with(parentNode.style){
+					transition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					MozTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					WebkitTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					OTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+				}
+				transition = true;
+			}
+		}
+		function disableTransitions(){
+			if(transition){
+				with(parentNode.style){
+					transition = "left 0s, width 0s";
+					MozTransition = "left 0s, width 0s";
+					WebkitTransition = "left 0s, width 0s";
+					OTransition = "left 0s, width 0s";
+				}
+				transition = false;
+			}
+		}
+	}
+
+	//This is our class persay
+	function block(element, order, totalNumbOfEl){
+		var parentNode = element.parentNode;
+		this.parent = parentNode;
+		var content = element;
+		var activeMain = findChildId(content,"activeMain");
+		var activeContainer = activeMain.parentNode;
+		var toArchiveButton = findChildId(activeMain,"archiveButton");
+		var toActiveButton = findChildId(activeContainer,"activeButton");
+		var inActive = true;
+
+		//meta data...
+		this.id = this.parent.id;
+		var localId = this.parent.id;
+		var order = order;
+		var totalNumbOfEl = totalNumbOfEl;
+		this.presenting = false; //to tell if it's big or not
+		var localWidth,localHeight;
+		var transition = false;
+
+		setLisenter();
+		setTimeout(enableTransitions,1);
+
+		this.makeColorRandom = function(){
+			content.style.backgroundColor = "#"+(Math.floor(Math.random()*999));
+		}
+
+		//sliding over to the archive area and back
+		if (!toActiveButton.addEventListener) {
+			toActiveButton.attachEvent("onclick",toActive);
+			toArchiveButton.attachEvent("onclick",toArchive);
+		} else {
+			toActiveButton.addEventListener("click",toActive);
+			toArchiveButton.addEventListener("click",toArchive);
+		}
+		function toActive(){
+			inActive = true;
+			with(content.style){
+				left = 0;
+			}
+		}
+		function toArchive(){
+			inActive = false;
+			with(content.style){
+				left = -localWidth;
+			}
+		}
+		this.callToActive = function(){
+			toActive();
+		}
+
+		this.setSize = function(newWidth,newHeight){
+			localWidth = newWidth;
+			localHeight = newHeight;
+
+			if(!this.presenting){
 				with(this.parent.style){
-					left = localWidth;
+					left = newWidth - ((order+1)*options["sizeOfButtons"]);
 					zIndex = 2;
 				}
-				//reenableing the sliding fucntion and then setting it to it's proper locaiton
-				setTimeout(function(){
-					staticOrder[order].setListener();
-					for(var a = 0; a < staticOrder.length; ++a){
-						staticOrder[a].bringToLocation(a);
-					}
-				},options["firstTransition"]);
+			}
+			with(content.style){
+				width = newWidth*2;
+				height = newHeight;
+			}
+			with(activeContainer.style){
+				width = newWidth+options["archiveNavWidth"]; //this makes the left nav for 30%
+			}
+			with(activeMain.style){
+				width = newWidth;
+			}
+			if(!inActive){
+				with(content.style){
+					left = -newWidth;
+				}
 			}
 		}
-	}
 
+		function setLisenter(){
+			if (!parentNode.addEventListener) {
+				parentNode.attachEvent("onclick",callMain);
+				console.log("added Event");
+			} else {
+				parentNode.addEventListener("click",callMain);
+			}
+		}
 
-	this.bringToLocation = function(newOrder){
-		if(newOrder == 0 || newOrder){
+		function callMain(){
+			console.log(localId);
+			makeMain(localId);
+		}
+
+		function removeListener(){
+			if(!parentNode.removeEventListener){
+				parentNode.detachEvent('onclick',callMain);
+			} else {
+				parentNode.removeEventListener("click",callMain);
+			}
+		}
+
+		this.setupToBeMain = function(){
+			this.presenting = true;
+			enableTransitions();
+			removeListener();
+			with(this.parent.style){
+				zIndex = 1;
+				left = "0px";
+				width = "100%";
+			}
+		}
+
+		this.bringToLocation = function(newOrder){
+			if(newOrder == 0 || newOrder){
+				order = newOrder;
+			}
+			enableTransitions();
+			with(parentNode.style){
+				left = localWidth - ((order+1)*options["sizeOfButtons"]);
+				zIndex = 2;
+				width = options["sizeOfButtons"]+"px";
+			}
+		}
+
+		this.bringToLocationHard = function(newOrder){
+			if(newOrder == 0 || newOrder){
+				order = newOrder;
+			}
+			disableTransitions();
+			with(parentNode.style){
+				left = localWidth - ((order+1)*options["sizeOfButtons"]);
+				zIndex = 2;
+				width = options["sizeOfButtons"]+"px";
+			}
+		}
+
+		this.hide = function(direction){
+			enableTransitions();
+			if(direction && direction =="right"){
+				this.parent.style.left = localWidth;	//sliding off the right
+			} else {
+				this.parent.style.left = -localWidth;	//sliding off the left
+			}
+		}
+
+		this.moveToHiddenPlace = function(){
+			disableTransitions();
+			setLisenter();
+			this.parent.style.left = localWidth;
+		}
+
+		this.basicOrder = function(newOrder){
 			order = newOrder;
 		}
-		//enableTransitions();
-		with(parentNode.style){
-			left = localWidth - ((order+1)*options["sizeOfButtons"]);
-			zIndex = 2;
-			width = options["sizeOfButtons"]+"px";
+
+		this.getOrder = function(){
+			return order;
 		}
-	}
 
-	this.basicOrder = function(newOrder){
-		order = newOrder;
-	}
-
-	this.getOrder = function(){
-		return order;
-	}
-
-	this.outEnableTrans = function(){
-		enableTransitions();
-	}
-	function enableTransitions(){
-		if(!transition){
-			with(parentNode.style){
-				transition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				MozTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				WebkitTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-				OTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
-			}
-			transition = true;
+		this.outEnableTrans = function(){
+			enableTransitions();
 		}
-	}
 
-	function disableTransitions(){
-		if(transition){
-			with(parentNode.style){
-				transition = "left 0s, width 0s";
-				MozTransition = "left 0s, width 0s";
-				WebkitTransition = "left 0s, width 0s";
-				OTransition = "left 0s, width 0s";
+		function enableTransitions(){
+			if(!transition){
+				with(parentNode.style){
+					transition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					MozTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					WebkitTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+					OTransition = "left "+options["slideTimmerTransition"]+", width "+options["slideTimmerTransition"];
+				}
+				transition = true;
 			}
-			transition = false;
+		}
+
+		function disableTransitions(){
+			if(transition){
+				with(parentNode.style){
+					transition = "left 0s, width 0s";
+					MozTransition = "left 0s, width 0s";
+					WebkitTransition = "left 0s, width 0s";
+					OTransition = "left 0s, width 0s";
+				}
+				transition = false;
+			}
 		}
 	}
 }
