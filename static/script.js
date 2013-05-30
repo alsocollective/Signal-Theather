@@ -6,12 +6,12 @@ var options = {
 	"idOfContent": 				"company",  		//the ID of div that will contain the company info
 	"idOfContentButton": 		"companyButton",	//the ID of button for the company
 	"sizeOfButtons": 			25, 				//the width of the side panels
-	"transitionSpeed": 			500, 				//the speed at which evertything moves, beaware, if people start clicking multiple things, they will try to load and in doing so, alter the animations
+	"firstTransition": 			1000,
+	"secondTransition": 		500, 				//the speed at which evertything moves, beaware, if people start clicking multiple things, they will try to load and in doing so, alter the animations
 	"archiveNavWidth": 			200, 				//keep this as the same width of the archive Nav
-	"randomButtonColors": 		true,				//this was for the dev of it...
+	"randomButtonColors": 		true				//this was for the dev of it...
 };
 
-options["idOfContent"]
 
 var width,height;
 
@@ -32,7 +32,14 @@ window.onload = function(){
 	company = new companyObj(document.getElementById(options["idOfContent"]),document.getElementById(options["idOfContentButton"]));
 	company.resize(width);
 
-	var elements = document.getElementsByClassName(options["classOfCreationMark"]);
+
+	var elements;
+	if (!document.getElementsByClassName) {
+		elements = AllWithClassName(root,options["classOfCreationMark"])
+	} else {
+		elements = document.getElementsByClassName(options["classOfCreationMark"]);
+	}
+
 	for(var a = 0; a < elements.length; ++a){
 		staticOrder[a] = (new block(elements[a],a, elements.length));
 		staticOrder[a].setSize(width,height);
@@ -42,18 +49,36 @@ window.onload = function(){
 		staticOrder[a].setListener();//.parent.addEventListener("click",makeMain);
 	}
 
-	window.addEventListener("resize",function(){
-		width = root.offsetWidth;
-		height = root.offsetHeight;
-		for(var a = 0; a < staticOrder.length; ++a){
-			staticOrder[a].setSize(width,height);
-		}
-		if(active && active.id != options["idOfSpash"]){
-			active.setSize(width,height);
-		}
-		company.resize(width);
-	});
+
+	if (!window.addEventListener) {
+		window.attachEvent("resize",function(){
+			width = root.offsetWidth;
+			height = root.offsetHeight;
+			for(var a = 0; a < staticOrder.length; ++a){
+				staticOrder[a].setSize(width,height);
+			}
+			if(active && active.id != options["idOfSpash"]){
+				active.setSize(width,height);
+			}
+			company.resize(width);
+		});
+	}
+	else {
+		window.addEventListener("resize",function(){
+			width = root.offsetWidth;
+			height = root.offsetHeight;
+			for(var a = 0; a < staticOrder.length; ++a){
+				staticOrder[a].setSize(width,height);
+			}
+			if(active && active.id != options["idOfSpash"]){
+				active.setSize(width,height);
+			}
+			company.resize(width);
+		});
+	}
 }
+
+
 
 
 function colapseAll(){
@@ -94,6 +119,8 @@ function makeMain(currentEvent){
 			a = 999;
 		}
 	}
+
+
 	//adding feature of slide the bar right and then refill
 	if(point < staticOrder.length){
 		if(point == 0 && !staticfull){	//when the far right object is pressed, and is not full
@@ -106,14 +133,21 @@ function makeMain(currentEvent){
 					for(var a = point; a < staticOrder.length; ++a){
 						staticOrder[a].bringToLocation(a);	//place the objects back to  where they are ment to be
 					}
-				},options["transitionSpeed"]);
-			},options["transitionSpeed"]+10); //we got to add a bit of time so the slide has time to move left
+				},options["firstTransition"]);
+			},options["firstTransition"]+10); //we got to add a bit of time so the slide has time to move left
 		} else if(point != staticOrder.length-1 || staticOrder.length > 1){ //anything larger than 0, and less than the last one
-			setTimeout(function(){
+
+		console.log("Tigger first Shuffel");
+			// for(var a = point; a < staticOrder.length; ++a){
+			// 	staticOrder[a].bringToLocation(a);
+			// }
+
+			//setTimeout(function(){
 				for(var a = point; a < staticOrder.length; ++a){
 					staticOrder[a].bringToLocation(a);
 				}
-			},options["transitionSpeed"]*2);
+			//},options["firstTransition"]*2);
+
 			staticfull = false;
 		}
 	}
@@ -144,6 +178,25 @@ function findChildId(within,id){
 	}
 }
 
+function AllWithClassName(inThisElement,className){
+	var children = inThisElement.childNodes;
+	var out = [];
+	for(var a = 0; a < children.length; ++a){
+		if(children[a].nodeType ==1){
+			if(children[a].className == className){
+				console.log(children[a]);
+				out.push(children[a]);
+			}
+			var lower = AllWithClassName(children[a],className);
+				for(var b = 0; b < lower.length; ++b){
+					out.push(lower[b]);
+				}
+		}
+	}
+	return out;
+}
+
+
 function companyObj(element,buttonEl){
 	var parentNode = element;
 	var buttonEl = buttonEl;
@@ -170,7 +223,12 @@ function companyObj(element,buttonEl){
 		}
 	}
 
-	buttonEl.addEventListener("click",toggle);
+	if (!buttonEl.addEventListener) {
+		buttonEl.attachEvent("onclick", toggle);
+	}
+	else {
+		buttonEl.addEventListener("click",toggle);
+	}
 
 	this.resize = function(newWidth){
 		if(!ondisplay){
@@ -183,10 +241,10 @@ function companyObj(element,buttonEl){
 	function enableTransitions(){
 		if(!transition){
 			with(parentNode.style){
-				transition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				MozTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				WebkitTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				OTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
+				transition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				MozTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				WebkitTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				OTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
 			}
 			transition = true;
 		}
@@ -227,22 +285,42 @@ function block(element, order, totalNumbOfEl){
 
 	setTimeout(enableTransitions,1);
 
-	toArchiveButton.addEventListener("click",function(){
-		inActive = false;
-		with(content.style){
-			left = -localWidth;
-		}
-	});
 
-	toActiveButton.addEventListener("click",function(){
-		inActive = true;
-		with(content.style){
-			left = 0;
-		}
-	});
+
+	if (!toActiveButton.addEventListener) {
+		toActiveButton.attachEvent("onclick",function(){
+			inActive = true;
+			with(content.style){
+				left = 0;
+			}
+		});
+		toArchiveButton.attachEvent("onclick",function(){
+			inActive = false;
+			with(content.style){
+				left = -localWidth;
+			}
+		});
+	} else {
+		toActiveButton.addEventListener("click",function(){
+			inActive = true;
+			with(content.style){
+				left = 0;
+			}
+		});
+		toArchiveButton.addEventListener("click",function(){
+			inActive = false;
+			with(content.style){
+				left = -localWidth;
+			}
+		});
+	}
 
 	this.setListener = function(){
-		parentEventListener = parentNode.addEventListener("click",makeMain);
+		if (!parentNode.addEventListener) {
+			parentNode.attachEvent("onclick",makeMain);
+		} else {
+			parentEventListener = parentNode.addEventListener("click",makeMain);
+		}
 	}
 
 	this.makeColorRandom = function(){
@@ -283,7 +361,11 @@ function block(element, order, totalNumbOfEl){
 			left = "0px";
 			width = "100%";
 		}
-		parentNode.removeEventListener("click",makeMain);
+		if(!parentNode.removeEventListener){
+			parentNode.detachEvent('onclick',makeMain);
+		} else {
+			parentNode.removeEventListener("click",makeMain);
+		}
 	}
 
 	this.setOrder = function(newOrder, newtotalNumbOfEl, direction){
@@ -298,18 +380,30 @@ function block(element, order, totalNumbOfEl){
 		order = newOrder;
 		totalNumbOfEl = newtotalNumbOfEl;
 		if(this.presenting){ 						//when we are dealing with the old preseting object we got to put it to the left and then bring it in
+			enableTransitions();
 			if(direction =="left"){
 				this.parent.style.left = -localWidth;	//sliding off the left
 			} else {
 				this.parent.style.left = localWidth;	//sliding off the right
 			}
 			this.presenting = false;				//no longer presenting
-			setTimeout(function(){					//once off screen we disable it and reorganize the elements
+
+			//this moves the emelents right away
+			for(var b = 0; b < staticOrder.length; ++b){
+				if(staticOrder[b].id != this.id){
+					staticOrder[b].bringToLocation(b-1);
+					staticOrder[b].basicOrder(b);
+					console.log(staticOrder[b].id);
+				}
+			}
+
+			//once off screen we disable it and reorganize the elements
+			setTimeout(function(){
+				disableTransitions();
 				for(var b = 0; b < staticOrder.length; ++b){
-					disableTransitions();
 					staticOrder[b].setOrder(b, staticOrder.length,"left");
 				}
-			},options["transitionSpeed"]);
+			},options["firstTransition"]);
 		}
 		else {
 			//when the element is off the screen it's transitions are disabled
@@ -326,7 +420,7 @@ function block(element, order, totalNumbOfEl){
 					for(var a = 0; a < staticOrder.length; ++a){
 						staticOrder[a].bringToLocation(a);
 					}
-				},options["transitionSpeed"]);
+				},options["firstTransition"]);
 			}
 		}
 	}
@@ -336,7 +430,7 @@ function block(element, order, totalNumbOfEl){
 		if(newOrder == 0 || newOrder){
 			order = newOrder;
 		}
-		enableTransitions();
+		//enableTransitions();
 		with(parentNode.style){
 			left = localWidth - ((order+1)*options["sizeOfButtons"]);
 			zIndex = 2;
@@ -358,10 +452,10 @@ function block(element, order, totalNumbOfEl){
 	function enableTransitions(){
 		if(!transition){
 			with(parentNode.style){
-				transition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				MozTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				WebkitTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
-				OTransition = "left "+options["transitionSpeed"]+", width "+options["transitionSpeed"];
+				transition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				MozTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				WebkitTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
+				OTransition = "left "+options["firstTransition"]+", width "+options["firstTransition"];
 			}
 			transition = true;
 		}
