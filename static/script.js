@@ -252,12 +252,15 @@ function SliderMain(options){
 		var activeContainer = activeMain.parentNode;
 		var toArchiveButton = findChildId(activeMain,"archiveButton");
 		var toActiveButton = findChildId(activeContainer,"activeButton");
+		var navPanel = findChildId(content,"archiveNavBar");
+		var archiveMain = findChildId(content,"archive");
 		var inActive = true;
 
 		//meta data...
 		this.id = this.parent.id;
 		var localId = this.parent.id;
 		var order = order;
+		var orderPlus = order + 1;
 		var totalNumbOfEl = totalNumbOfEl;
 		this.presenting = false; //to tell if it's big or not
 		var localWidth,localHeight;
@@ -299,8 +302,8 @@ function SliderMain(options){
 			localHeight = newHeight;
 
 			if(!this.presenting){
-				with(this.parent.style){
-					left = newWidth - ((order+1)*options["sizeOfButtons"]);
+				with(parentNode.style){
+					left = (newWidth - (orderPlus*options["sizeOfButtons"]));
 					zIndex = 2;
 				}
 			}
@@ -313,6 +316,12 @@ function SliderMain(options){
 			}
 			with(activeMain.style){
 				width = newWidth;
+			}
+			with(navPanel.style){
+				width = options["archiveNavWidth"]-20;
+			}
+			with(archiveMain.style){
+				width = newWidth-options["archiveNavWidth"];
 			}
 			if(!inActive){
 				with(content.style){
@@ -357,10 +366,11 @@ function SliderMain(options){
 		this.bringToLocation = function(newOrder){
 			if(newOrder == 0 || newOrder){
 				order = newOrder;
+				orderPlus = newOrder + 1;
 			}
 			enableTransitions();
 			with(parentNode.style){
-				left = localWidth - ((order+1)*options["sizeOfButtons"]);
+				left = localWidth - ((orderPlus)*options["sizeOfButtons"]);
 				zIndex = 2;
 				width = options["sizeOfButtons"]+"px";
 			}
@@ -369,10 +379,11 @@ function SliderMain(options){
 		this.bringToLocationHard = function(newOrder){
 			if(newOrder == 0 || newOrder){
 				order = newOrder;
+				orderPlus = newOrder + 1;
 			}
 			disableTransitions();
 			with(parentNode.style){
-				left = localWidth - ((order+1)*options["sizeOfButtons"]);
+				left = localWidth - ((orderPlus)*options["sizeOfButtons"]);
 				zIndex = 2;
 				width = options["sizeOfButtons"]+"px";
 			}
@@ -395,6 +406,7 @@ function SliderMain(options){
 
 		this.basicOrder = function(newOrder){
 			order = newOrder;
+			orderPlus = newOrder + 1;
 		}
 
 		this.getOrder = function(){

@@ -27,6 +27,11 @@ div{
 	display: none;
 }
 
+/*should not be inline, should be postioned fixed somewhere*/
+#companyButton{
+/*	display: none;*/
+}
+
 .content{
 	position: absolute;
 	transition: left 1s, width 1s;
@@ -46,10 +51,12 @@ div{
 #active{
 	display: inline-block;
 	height: 100%;
+	overflow-y: scroll;
 }
 
 #active #activeMain{
 	height: 100%;
+	overflow-y: scroll;
 	display: inline-block;
 }
 
@@ -61,6 +68,8 @@ div{
 
 #archive{
 	display: inline-block;
+	height: 100%;
+	overflow-y: scroll;
 }
 
 #splash{
