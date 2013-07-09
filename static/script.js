@@ -316,9 +316,11 @@ function SliderMain(options){
 			}
 			with(activeMain.style){
 				width = newWidth;
+				left = 0;
 			}
 			with(navPanel.style){
-				width = options["archiveNavWidth"]-20;
+				width = options["archiveNavWidth"];
+				left = newWidth + "px";
 			}
 			with(archiveMain.style){
 				width = newWidth-options["archiveNavWidth"];
